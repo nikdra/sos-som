@@ -10,6 +10,7 @@ Welcome to sos-som's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   modules
 
 Indices and tables
 ==================
