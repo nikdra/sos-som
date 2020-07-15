@@ -12,12 +12,12 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../../src/sos-som/'))
+sys.path.insert(0, os.path.abspath('../../src/'))
 
 
 # -- Project information -----------------------------------------------------
 
-project = 'sos-som'
+project = 'som'
 copyright = '2020, Nikola Dragovic'
 author = 'Nikola Dragovic'
 

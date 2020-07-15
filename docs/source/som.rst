@@ -1,5 +1,5 @@
-sos\-som package
-================
+som package
+===========
 
 Subpackages
 -----------
@@ -7,14 +7,14 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   sos-som.maps
-   sos-som.measures
-   sos-som.visualization
+   som.maps
+   som.measures
+   som.visualization
 
 Module contents
 ---------------
 
-.. automodule:: sos-som
+.. automodule:: som
    :members:
    :undoc-members:
    :show-inheritance:

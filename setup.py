@@ -8,7 +8,7 @@ here = pathlib.Path(__file__).parent.resolve()
 long_description = (here / 'README.md').read_text(encoding='utf-8')
 
 setup(
-    name="sos-som",  # Replace with your own username
+    name="som",  # Replace with your own username
     version="20.06",
     author="Nikola Dragovic",
     author_email="e1528986@tuwien.ac.at",

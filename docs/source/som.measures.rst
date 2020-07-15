@@ -1,10 +1,10 @@
-sos\-som.maps package
-=====================
+som.measures package
+====================
 
 Module contents
 ---------------
 
-.. automodule:: sos-som.maps
+.. automodule:: som.measures
    :members:
    :undoc-members:
    :show-inheritance:
