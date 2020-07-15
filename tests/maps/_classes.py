@@ -1,6 +1,6 @@
 import unittest
 
-from src.som.maps import RectangularSOM
+from som.maps import RectangularSOM
 
 
 class TestRectangularSOM(unittest.TestCase):
