@@ -1,4 +1,5 @@
 import unittest
+import pandas as pd
 
 from som.maps import RectangularSOM
 
@@ -7,13 +8,13 @@ class TestRectangularSOM(unittest.TestCase):
 
     def test_init(self):
         RectangularSOM((1, 1), 1)
-        return True
 
     def test_train(self):
-        som = RectangularSOM((1, 1), 1)
-        trained_som = som.train(None)
-        self.assertTrue(trained_som.trained)
-        # self.assertIsNotNone(trained_som.codebook)
+        data = pd.read_csv('../data/test_data.csv').drop(['Class'], axis=1)
+        som = RectangularSOM((50, 50), 5)
+        som.train(data)
+        self.assertTrue(som.trained)
+        self.assertIsNotNone(som.get_codebook())
 
 
 if __name__ == '__main__':

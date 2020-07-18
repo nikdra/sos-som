@@ -142,21 +142,21 @@ class RectangularSOM(BaseSOM):
             self.codebook = _init_codebook(self.map_size, data.to_numpy())
 
         # initialize arrays of alphas and radii - decrease linearly with increasing iterations
-        alphas = np.linspace(alpha, 0, num=iterations)
-        radii = np.linspace(self.neighborhood_radius, 0, num=iterations)
+        alphas = np.linspace(alpha, 0, num=iterations, endpoint=False)
+        radii = np.linspace(self.neighborhood_radius, 0, num=iterations, endpoint=False)
 
         # main training loop
         for i in range(iterations):
             # get data point
-            x = data.sample().numpy()
+            x = data.sample().to_numpy()
             # calculate distance
-            d = self.distance_function(codebook, x)
+            d = self.distance_function(self.codebook, x)
             # get index of unit with minimum distance
             ind = np.unravel_index(np.argmin(d), d.shape)
             # get neighborhood
             neighborhood = self.neighborhood_function(self.neighborhood_indices, ind, radii[i])
             # update
-            codebook = codebook + alphas[i] * neighborhood[:, :, None] * (x - codebook)
+            self.codebook = self.codebook + alphas[i] * neighborhood[:, :, None] * (x - self.codebook)
 
         # finished training
         self.trained = True
