@@ -26,7 +26,15 @@ class BaseSOM:
                  neighborhood_radius,
                  neighborhood_type,
                  distance_measure):
+        # parameter check
+        if neighborhood_radius <= 0:
+            raise ValueError("Neighborhood radius smaller or equal 0. Must be greater than 0")
         self.neighborhood_type = neighborhood_type
+        if neighborhood_type not in ['gauss']:
+            raise ValueError("Neighborhood type " + str(neighborhood_type) + " not supported")
+        if distance_measure not in ["euclidean"]:
+            raise ValueError("Distance measure " + str(distance_measure) + " not supported")
+
         self.neighborhood_radius = neighborhood_radius
         self.distance_measure = distance_measure
         self.codebook = None
@@ -60,7 +68,7 @@ class RectangularSOM(BaseSOM):
     ----------
     map_size: int, int
         The size of the rectangular SOM (height, width).
-    neighborhood_radius: int
+    neighborhood_radius: float
         The radius of the neighborhood.
         For the Gaussian neighborhood, this is the standard deviation of the Gauss function.
     neighborhood_type: {"gauss"}, default = "gauss"
@@ -90,6 +98,16 @@ class RectangularSOM(BaseSOM):
         super().__init__(neighborhood_radius,
                          neighborhood_type,
                          distance_measure)
+        # parameter check
+        if type(map_size) != tuple:
+            raise ValueError("map_size is not a tuple")
+        if len(map_size) != 2:
+            raise ValueError("map_size must be tuple of length 2")
+        if map_size[0] <= 0 or map_size[1] <= 0:
+            raise ValueError("height and width of RectangularSOM must be greater zero")
+        if type(map_size[0]) != int or type(map_size[1]) != int:
+            raise ValueError("height and width of map must be integers")
+
         # set map size
         self.map_size = map_size
         # set array of neighborhood indices
@@ -133,6 +151,13 @@ class RectangularSOM(BaseSOM):
 
         The main loop could not be eliminated via vectorization.
         """
+        # parameter check
+        if iterations <= 0:
+            raise ValueError("Iterations must be greater 0")
+        if alpha <= 0:
+            raise ValueError("Learning parameter must be greater 0")
+        if data is None:
+            raise ValueError("Data is None")
 
         # set random seed
         np.random.seed(random_seed)
