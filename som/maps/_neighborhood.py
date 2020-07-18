@@ -24,7 +24,7 @@ def _indices_array_generic_2d(m, n):
     out: ndarray of shape (m, n, 2)
         Contains the index (i, j) at every position.
     """
-    r0 = np.arange(m)  # Or r0,r1 = np.ogrid[:m,:n], out[:,:,0] = r0
+    r0 = np.arange(m)
     r1 = np.arange(n)
     out = np.empty((m, n, 2), dtype=int)
     out[:, :, 0] = r0[:, None]

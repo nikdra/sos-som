@@ -66,9 +66,9 @@ class RectangularSOM(BaseSOM):
     Parameters
     ----------
     map_size: int, int
-        The size of the rectangular SOM (height, width).
+        The size of the rectangular SOM (height, width). Both height and width must be greater than zero.
     neighborhood_radius: float
-        The radius of the neighborhood.
+        The radius of the neighborhood. Must be greater than zero.
         For the Gaussian neighborhood, this is the standard deviation of the Gauss function.
     neighborhood_type: {"gauss"}, default = "gauss"
         The type of neighborhood to be used for training the SOM.
@@ -125,9 +125,10 @@ class RectangularSOM(BaseSOM):
         data: DataFrame of shape (n_samples, n_features)
             Data to train the SOM. Should not contain the class labels for interpretable results.
         iterations: int, default = 10000
-            The number of iterations in the algorithm.
+            The number of iterations in the algorithm. Must be greater than zero.
         alpha: double, default = 0.95
-            The learning parameter. Decreases linearly towards zero with increasing iterations.
+            The learning parameter. Decreases linearly towards zero with increasing iterations. Must be greater than
+            zero.
         random_seed: int, default = 1
             The random seed for the algorithm as well as the initialization of the codebook.
         codebook: DataFrame of shape (map_size, n_features), default = "None"

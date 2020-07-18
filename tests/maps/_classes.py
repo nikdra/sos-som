@@ -1,3 +1,6 @@
+"""
+This module gathers tests for SOM variants that can be trained in this module.
+"""
 import unittest
 import pandas as pd
 
