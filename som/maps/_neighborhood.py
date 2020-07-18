@@ -53,7 +53,7 @@ def _generate_neighborhood_indices_2d(map_size):
     return _indices_array_generic_2d(*map_size)
 
 
-def _gauss_neighborhood(neighborhood_indices, mean, sigma):
+def _gauss_neighborhood_2d(neighborhood_indices, mean, sigma):
     """
     Generate the normalized [0,1] pdf of a Gauss distribution for a given neighborhood
 

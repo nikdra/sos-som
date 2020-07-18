@@ -3,14 +3,14 @@ This module gathers SOM variants that can be trained in this module.
 """
 
 # Authors: Nikola Dragovic (@nikdra), 18.07.2020
+# TODO add exceptions for faulty parameters
 
 from abc import abstractmethod
 import numpy as np
-from scipy.stats import multivariate_normal
 
 from ._codebook import _init_codebook
 from ._distance import _euclid_distance
-from ._neighborhood import _generate_neighborhood_indices_2d, _gauss_neighborhood
+from ._neighborhood import _generate_neighborhood_indices_2d, _gauss_neighborhood_2d
 
 
 class BaseSOM:
@@ -24,9 +24,11 @@ class BaseSOM:
     @abstractmethod
     def __init__(self,
                  neighborhood_radius,
-                 neighborhood_type):
+                 neighborhood_type,
+                 distance_measure):
         self.neighborhood_type = neighborhood_type
         self.neighborhood_radius = neighborhood_radius
+        self.distance_measure = distance_measure
         self.codebook = None
         self.trained = False
 
@@ -56,28 +58,48 @@ class RectangularSOM(BaseSOM):
 
     Parameters
     ----------
+    map_size: int, int
+        The size of the rectangular SOM (height, width).
     neighborhood_radius: int
         The radius of the neighborhood.
         For the Gaussian neighborhood, this is the standard deviation of the Gauss function.
-
     neighborhood_type: {"gauss"}, default = "gauss"
         The type of neighborhood to be used for training the SOM.
+    distance_measure: {"euclidean"}, default = "euclidean"
+        The distance measure to be used to calculate distances between units' weight vectors and the data
 
+    Attributes
+    ----------
     map_size: int, int
-        The size of the rectangular SOM (height, width).
+        The height and width of the RectangularSOM.
+    neighborhood_indices: ndarray of shape (map_size, 2)
+        A ndarray that contains the indices of each position the SOM. Needed for vectorization of the update function.
+    neighborhood_function: function(ndarray, int, float)
+        The neighborhood function to be used in an iteration of the training. The first argument are the SOM indices,
+        the second argument is the index of the BMU of an iteration, and the third argument is the current
+        neighborhood radius.
+    distance_function: function(ndarray, array-like)
+        The function for calculating the distances between every weight vector in the codebook and a sample (vector).
     """
 
     def __init__(self,
                  map_size,
                  neighborhood_radius,
-                 neighborhood_type="gauss"):
+                 neighborhood_type="gauss",
+                 distance_measure="euclidean"):
         super().__init__(neighborhood_radius,
-                         neighborhood_type)
+                         neighborhood_type,
+                         distance_measure)
+        # set map size
         self.map_size = map_size
+        # set array of neighborhood indices
         self.neighborhood_indices = _generate_neighborhood_indices_2d(map_size)
+        # set neighborhood function
+        self.neighborhood_function = self.__neighborhood()
+        # set distance function
+        self.distance_function = self.__distance()
 
     def train(self, data, iterations=10000, alpha=0.95, random_seed=1, codebook=None):
-        # TODO check neighborhood function, distance function (add also as parameter)
         """
         Train the standard rectangular SOM using the iterative algorithm.
 
@@ -115,6 +137,7 @@ class RectangularSOM(BaseSOM):
         # set random seed
         np.random.seed(random_seed)
 
+        # no custom initialization of the codebook given
         if codebook is None:
             self.codebook = _init_codebook(self.map_size, data.to_numpy())
 
@@ -127,14 +150,38 @@ class RectangularSOM(BaseSOM):
             # get data point
             x = data.sample().numpy()
             # calculate distance
-            d = _euclid_distance(codebook, x)
+            d = self.distance_function(codebook, x)
             # get index of unit with minimum distance
             ind = np.unravel_index(np.argmin(d), d.shape)
             # get neighborhood
-            neighborhood = _gauss_neighborhood(self.neighborhood_indices, ind, radii[i])
+            neighborhood = self.neighborhood_function(self.neighborhood_indices, ind, radii[i])
             # update
             codebook = codebook + alphas[i] * neighborhood[:, :, None] * (x - codebook)
 
         # finished training
         self.trained = True
         return self
+
+    def __neighborhood(self):
+        """
+        Set the underlying neighborhood function for the given neighborhood type
+
+        Returns
+        -------
+        neighborhood_function: function(neighborhood_indices, index, radius)
+            The neighborhood function.
+        """
+        if self.neighborhood_type == "gauss":
+            return _gauss_neighborhood_2d
+
+    def __distance(self):
+        """
+        Set the underlying distance function for the given distance measure
+
+        Returns
+        -------
+        distance_function: function(codebook, sample)
+            The distance function.
+        """
+        if self.distance_measure == "euclidean":
+            return _euclid_distance
