@@ -129,7 +129,7 @@ class RectangularSOM(BaseSOM):
         algorithm presented in the Self-Organizing Systems lecture, as also described in Kohonen (1982).
         The update rule is implemented in a vectorized fashion for the codebook, but follows the known schema:
 
-        :math:`m_i \\leftarrow m_i(t) + \\alpha(t) \\cdot h_{ci}(t) \\cdot |x_i(t) - m_i(t)|`
+        :math:`m_i \\leftarrow m_i(t) + \\alpha(t) \\cdot h_{ci}(t) \\cdot |x(t) - m_i(t)|`
 
         The main loop could not be eliminated via vectorization.
         """
