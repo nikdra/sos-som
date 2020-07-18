@@ -3,7 +3,6 @@ This module gathers SOM variants that can be trained in this module.
 """
 
 # Authors: Nikola Dragovic (@nikdra), 18.07.2020
-# TODO add exceptions for faulty parameters
 
 from abc import abstractmethod
 import numpy as np
@@ -29,12 +28,12 @@ class BaseSOM:
         # parameter check
         if neighborhood_radius <= 0:
             raise ValueError("Neighborhood radius smaller or equal 0. Must be greater than 0")
-        self.neighborhood_type = neighborhood_type
         if neighborhood_type not in ['gauss']:
             raise ValueError("Neighborhood type " + str(neighborhood_type) + " not supported")
         if distance_measure not in ["euclidean"]:
             raise ValueError("Distance measure " + str(distance_measure) + " not supported")
 
+        self.neighborhood_type = neighborhood_type
         self.neighborhood_radius = neighborhood_radius
         self.distance_measure = distance_measure
         self.codebook = None
