@@ -2,79 +2,87 @@
 This module gathers neighborhood-related functions for SOM training
 """
 
-# Authors: Nikola Dragovic (@nikdra), 18.07.2020
+# Authors: Nikola Dragovic (@nikdra), 26.07.2020
 
 import numpy as np
 from scipy.stats import multivariate_normal
 
 
-def _indices_array_generic_2d(m, n):
-    # TODO change (see test notebook)
+def _positions_array_generic_2d(map_size):
     """
-    Helper function to generate indices of shape (m, n).
-
-    Parameters
-    ----------
-    m: int
-        Size of the first dimension.
-    n: int
-        Size of the second dimension.
-
-    Returns
-    -------
-    out: ndarray of shape (m, n, 2)
-        Contains the index (i, j) at every position.
-    """
-    r0 = np.arange(m)
-    r1 = np.arange(n)
-    out = np.empty((m, n, 2), dtype=int)
-    out[:, :, 0] = r0[:, None]
-    out[:, :, 1] = r1
-    return out
-
-
-def _generate_neighborhood_indices_2d(map_size):
-    """
-    Generate a ndarray of shape map_size that contains the indices of each index.
+    Helper function to generate indices of shape (m * n, 2).
 
     Parameters
     ----------
     map_size: int, int
-        The shape of the SOM.
+         The height and width of the grid.
 
     Returns
     -------
-    neighborhood_indices: ndarray of shape (map_size, map_dim)
-        A ndarray that contains the indices of each position the SOM.
-
-    Notes
-    -----
-    This _should_ improve the efficiency of neighborhood calculation via vectorization.
+    out: ndarray of shape (m * n, 2)
+        Contains the index [i, j] of each unit.
     """
-    return _indices_array_generic_2d(*map_size)
+    m = map_size[0]
+    n = map_size[1]
+    return np.indices((m, n)).transpose(1, 2, 0).reshape(-1, 2)
 
 
-def _gauss_neighborhood_2d(neighborhood_indices, mean, sigma):
+def generate_hex_positions(map_size):
     """
-    Generate the normalized [0,1] pdf of a Gauss distribution for a given neighborhood
+    Helper function to generate cube coordinates for a hexagonal grid of rectangular shape
 
     Parameters
     ----------
-    neighborhood_indices: ndarray of shape (map_size, map_dim)
-        A ndarray that contains the indices of each position the SOM.
-    mean: {array-like, tuple} int
-        The mean of the Gauss distribution. Usually, this is the position (index) of the BMU
+    map_size: int, int
+         The height and width of the grid.
+
+    Returns
+    -------
+    arr: ndarray of shape (n_units, 3)
+        Contains the cube coordinates of each unit of the grid
+    """
+    i = 0  # position count
+    arr = np.empty((map_size[0] * map_size[1], 3))  # init array of positions (num_units, 3)
+    for q in range(map_size[1]):
+        q_offset = q // 2  # akin to floor(q/2)
+        for r in range(-q_offset, map_size[0] - q_offset):
+            arr[i] = np.array([q, r, -q-r])  # add position to array
+            i = i + 1  # increase position counter
+    return arr
+
+
+def _gauss_neighborhood(neighborhood_distances, sigma):
+    """
+    Generate the normalized [0,1] pdf of a Gauss distribution for a given 1d neighborhood
+
+    Parameters
+    ----------
+    neighborhood_distances: ndarray of size n_units
+        A ndarray that contains the distance of each unit of the SOM to the mean.
     sigma: float
         The standard deviation of the Gauss distribution. Akin to the neighborhood radius.
 
     Returns
     -------
-    neighborhood: ndarray of shape map_size
+    neighborhood: ndarray of size n_units
         An array that contains normalized values in [0,1] that indicate how much each unit should be pulled
         towards the data sample.
     """
-    # calculate pdf with mean at BMU
-    sigma = np.array([sigma, sigma])
-    neighborhood = multivariate_normal.pdf(neighborhood_indices, mean=mean, cov=np.diag(sigma ** 2))
-    # normalize pdf values in [0, 1]
+    neighborhood = multivariate_normal.pdf(neighborhood_distances, mean=0, cov=sigma ** 2)
+    return __norm_neighborhood(neighborhood)
+
+
+def __norm_neighborhood(neighborhood):
+    """
+    Normalize the values of the neighborhood between [0,1]
+
+    Parameters
+    ----------
+    neighborhood: array of size n_units
+        The calculated neighborhood values for each unit in the SOM
+
+    Returns
+    -------
+    norm_neighborhood:
+    """
     return (neighborhood - np.min(neighborhood)) / np.ptp(neighborhood)

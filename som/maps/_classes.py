@@ -1,16 +1,14 @@
 """
 This module gathers SOM variants that can be trained in this module.
 """
-# TODO refactor for hexagonal topology
-# TODO see notes for further refactoring considerations
-# Authors: Nikola Dragovic (@nikdra), 25.07.2020
+# Authors: Nikola Dragovic (@nikdra), 26.07.2020
 
 from abc import abstractmethod
 import numpy as np
 
 from ._codebook import _init_codebook
-from ._distance import _euclid_distance
-from ._neighborhood import _generate_neighborhood_indices_2d, _gauss_neighborhood_2d
+from ._distance import _euclid_distance, _hex_distance
+from ._neighborhood import _gauss_neighborhood, _positions_array_generic_2d, generate_hex_positions
 
 
 class BaseSOM:
@@ -28,7 +26,7 @@ class BaseSOM:
                  neighborhood_type,
                  distance_measure):
         # parameter check
-        if topology not in ["rectangular"]:
+        if topology not in ["rectangular", "hexagonal"]:
             raise ValueError("Topology " + str(topology) + " not supported")
         if neighborhood_radius <= 0:
             raise ValueError("Neighborhood radius smaller or equal 0. Must be greater than 0")
@@ -38,9 +36,11 @@ class BaseSOM:
             raise ValueError("Distance measure " + str(distance_measure) + " not supported")
 
         self.neighborhood_type = neighborhood_type
+        self.topology = topology
         self.neighborhood_radius = neighborhood_radius
         self.distance_measure = distance_measure
         self.codebook = None
+        self.positions = None
         self.trained = False
 
     @abstractmethod
@@ -55,12 +55,26 @@ class BaseSOM:
 
         Returns
         -------
-        codebook: ndarray of shape (map_dim, n_features) or None in case the SOM is not trained
-            The codebook of the SOM i.e. the weight vectors of the units of the SOM.
+        codebook: ndarray of shape (n_units, n_features) or None in case the SOM is not trained
+            The codebook of the SOM i.e., the weight vectors of the units of the SOM.
         """
         if self.trained:
             return self.codebook
         return None
+
+    def get_positions(self):
+        """
+        Return the positions of the units of the SOM
+
+        The positions are only returned if the SOM has been initialized
+
+
+        Returns
+        -------
+        positions: array-like or None in case the SOM has not been initialized
+            The position of each unit of the SOM. Can be of various shapes depending on the architecture of the SOM
+        """
+        return self.positions
 
 
 class StandardSOM(BaseSOM):
@@ -74,8 +88,8 @@ class StandardSOM(BaseSOM):
     neighborhood_radius: float
         The radius of the neighborhood. Must be greater than zero.
         For the Gaussian neighborhood, this is the standard deviation of the Gauss function.
-    topology: {"rectangular"}, default = "rectangular"
-        The topology of the SOM. Currently, only the rectangular StandardSOM is supported, as opposed to hexagonal SOM.
+    topology: {"rectangular", "hexagonal"}, default = "rectangular"
+        The topology of the SOM. Can be rectangular (4 neighbors) or hexagonal (8 neighbors)
     neighborhood_type: {"gauss"}, default = "gauss"
         The type of neighborhood to be used for training the SOM.
     distance_measure: {"euclidean"}, default = "euclidean"
@@ -85,17 +99,19 @@ class StandardSOM(BaseSOM):
     ----------
     map_size: int, int
         The height and width of the StandardSOM.
-    topology: {"rectangular"}
+    topology: {"rectangular", "hexagonal"}
         The topology of the StandardSOM. Determines the number of neighbors for a unit. In a rectangular SOM, a unit
         has four neighbors. In a hexagonal SOM, a unit has six neighbors.
-    neighborhood_indices: ndarray of shape (map_size, 2)
-        A ndarray that contains the indices of each position the SOM. Needed for vectorization of the update function.
-    neighborhood_function: function(ndarray, int, float)
-        The neighborhood function to be used in an iteration of the training. The first argument are the SOM indices,
-        the second argument is the index of the BMU of an iteration, and the third argument is the current
-        neighborhood radius.
-    distance_function: function(ndarray, array-like)
+    positions: ndarray of shape (n_units, n_dim)
+        The array of positions of each unit of the SOM. In a rectangular grid, this array has two-dimensional entries
+        at every index. In a hexagonal grid, this array has three-dimensional entries at every index (cube coordinates).
+    neighborhood_function: function(ndarray, float)
+        The neighborhood function to be used in an iteration of the training. The first argument are the distances to
+        the BMU in the SOM. The second argument is the current neighborhood radius.
+    input_space_distance: function(ndarray, array-like)
         The function for calculating the distances between every weight vector in the codebook and a sample (vector).
+    output_space_distance: function(ndarray, array-like)
+        The function for calculating the distances between every unit in the SOM and a given unit.
     """
 
     def __init__(self,
@@ -120,14 +136,17 @@ class StandardSOM(BaseSOM):
 
         # set map size
         self.map_size = map_size
-        # set topology
-        self.topology = topology
-        # set array of neighborhood indices
-        self.neighborhood_indices = _generate_neighborhood_indices_2d(map_size)
+        # set array of positions
+        if self.topology == "rectangular":
+            self.positions = _positions_array_generic_2d(map_size)
+        elif self.topology == "hexagonal":
+            self.positions = generate_hex_positions(map_size)
         # set neighborhood function
         self.neighborhood_function = self.__neighborhood()
-        # set distance function
-        self.distance_function = self.__distance()
+        # set distance function in input space
+        self.input_space_distance = self.__input_distance()
+        # set distance function in output space
+        self.output_space_distance = self.__output_distance()
 
     def train(self, data, iterations=10000, alpha=0.95, random_seed=1, codebook=None):
         """
@@ -144,7 +163,7 @@ class StandardSOM(BaseSOM):
             zero.
         random_seed: int, default = 1
             The random seed for the algorithm as well as the initialization of the codebook.
-        codebook: DataFrame of shape (map_size, n_features), default = "None"
+        codebook: DataFrame of shape (n_units, n_features), default = "None"
             The initial codebook for the SOM. If not set, the SOM will be initialized with random values in the range of
             the minimum of a feature value to its maximum.
 
@@ -177,7 +196,8 @@ class StandardSOM(BaseSOM):
 
         # no custom initialization of the codebook given
         if codebook is None:
-            self.codebook = _init_codebook(self.map_size, data.to_numpy())
+            # initialize codebook with random values
+            self.codebook = _init_codebook(self.map_size[0] * self.map_size[1], data.to_numpy())
 
         # initialize arrays of alphas and radii - decrease linearly with increasing iterations
         alphas = np.linspace(alpha, 0, num=iterations, endpoint=False)
@@ -187,14 +207,18 @@ class StandardSOM(BaseSOM):
         for i in range(iterations):
             # get data point
             x = data.sample().to_numpy()
-            # calculate distance
-            d = self.distance_function(self.codebook, x)
+            # calculate distance in input space
+            d = self.input_space_distance(self.codebook, x)
             # get index of unit with minimum distance
             ind = np.unravel_index(np.argmin(d), d.shape)
+            # get position of unit with minimum distance
+            bmu = self.positions[ind]
+            # get distances of BMU to all units in output space
+            neighborhood_distances = self.output_space_distance(self.positions, bmu)
             # get neighborhood
-            neighborhood = self.neighborhood_function(self.neighborhood_indices, ind, radii[i])
+            neighborhood = self.neighborhood_function(neighborhood_distances, radii[i])
             # update
-            self.codebook = self.codebook + alphas[i] * neighborhood[:, :, None] * (x - self.codebook)
+            self.codebook = self.codebook + alphas[i] * neighborhood[:, None] * (x - self.codebook)
 
         # finished training
         self.trained = True
@@ -206,20 +230,35 @@ class StandardSOM(BaseSOM):
 
         Returns
         -------
-        neighborhood_function: function(neighborhood_indices, index, radius)
+        neighborhood_function: function(neighborhood_distances, radius)
             The neighborhood function.
         """
         if self.neighborhood_type == "gauss":
-            return _gauss_neighborhood_2d
+            return _gauss_neighborhood
 
-    def __distance(self):
+    def __input_distance(self):
         """
-        Set the underlying distance function for the given distance measure
+        Set the underlying distance function for the given distance measure in input space
 
         Returns
         -------
-        distance_function: function(codebook, sample)
-            The distance function.
+        input_distance_function: function(codebook, sample)
+            The input space distance function.
         """
         if self.distance_measure == "euclidean":
             return _euclid_distance
+
+    def __output_distance(self):
+        """
+        Set the underlying distance function for the given topology in output space
+
+
+        Returns
+        -------
+        output_distance_function: function(positions, position)
+            The output space distance function.
+        """
+        if self.topology == "rectangular":
+            return _euclid_distance
+        elif self.topology == "hexagonal":
+            return _hex_distance

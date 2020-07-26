@@ -2,39 +2,31 @@
 This module gathers codebook functions for SOMs
 """
 
-# Authors: Nikola Dragovic (@nikdra), 18.07.2020
+# Authors: Nikola Dragovic (@nikdra), 26.07.2020
 
 import numpy as np
 
 
-def _init_codebook(map_size, data):
+def _init_codebook(n_units, data):
     """
-    Initialize the codebook of shape (map_size, n_features) with random values in [min_value, max_value) for each
+    Initialize the codebook of shape (n_units, n_features) with random values in [min_value, max_value) for each
     feature dimension in data.
 
     Parameters
     ----------
-    map_size: int, int
-        The shape of the SOM.
+    n_units: int
+        The number of units in the SOM.
     data: array-like of shape (n_samples, n_features)
         The data that the SOM will be trained on.
 
     Returns
     -------
-    codebook: array-like of shape (map_size, n_features)
+    codebook: array-like of shape (n_units, n_features)
         The initialized codebook.
     """
-    # turn map size into list
-    mpd = list(map_size)
 
-    # append number of features
-    mpd.append(data.shape[1])
-
-    # turn back into a tuple
-    arr_size = tuple(mpd)
-
-    # initialize the codebook size width x height x n_features with random values in (0,1]
-    codebook = np.random.rand(*arr_size)
+    # initialize the codebook size n_units x n_features with random values in (0,1]
+    codebook = np.random.rand(n_units, data.shape[1])
 
     # minimums of features
     data_mins = np.min(data, axis=0)

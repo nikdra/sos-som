@@ -12,9 +12,16 @@ class TestRectangularSOM(unittest.TestCase):
     def test_init(self):
         StandardSOM((1, 1), 1)
 
-    def test_train(self):
+    def test_train_rectangular(self):
         data = pd.read_csv('../data/test_data.csv').drop(['Class'], axis=1)
         som = StandardSOM((50, 50), 5)
+        som.train(data)
+        self.assertTrue(som.trained)
+        self.assertIsNotNone(som.get_codebook())
+
+    def test_train_hexagonal(self):
+        data = pd.read_csv('../data/test_data.csv').drop(['Class'], axis=1)
+        som = StandardSOM((50, 50), 5, "hexagonal")
         som.train(data)
         self.assertTrue(som.trained)
         self.assertIsNotNone(som.get_codebook())
