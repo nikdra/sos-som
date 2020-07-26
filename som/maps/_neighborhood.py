@@ -9,6 +9,7 @@ from scipy.stats import multivariate_normal
 
 
 def _indices_array_generic_2d(m, n):
+    # TODO change (see test notebook)
     """
     Helper function to generate indices of shape (m, n).
 

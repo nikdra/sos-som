@@ -1,8 +1,9 @@
 """
 This module gathers SOM variants that can be trained in this module.
 """
-
-# Authors: Nikola Dragovic (@nikdra), 18.07.2020
+# TODO refactor for hexagonal topology
+# TODO see notes for further refactoring considerations
+# Authors: Nikola Dragovic (@nikdra), 25.07.2020
 
 from abc import abstractmethod
 import numpy as np
@@ -22,13 +23,16 @@ class BaseSOM:
 
     @abstractmethod
     def __init__(self,
+                 topology,
                  neighborhood_radius,
                  neighborhood_type,
                  distance_measure):
         # parameter check
+        if topology not in ["rectangular"]:
+            raise ValueError("Topology " + str(topology) + " not supported")
         if neighborhood_radius <= 0:
             raise ValueError("Neighborhood radius smaller or equal 0. Must be greater than 0")
-        if neighborhood_type not in ['gauss']:
+        if neighborhood_type not in ["gauss"]:
             raise ValueError("Neighborhood type " + str(neighborhood_type) + " not supported")
         if distance_measure not in ["euclidean"]:
             raise ValueError("Distance measure " + str(distance_measure) + " not supported")
@@ -59,7 +63,7 @@ class BaseSOM:
         return None
 
 
-class RectangularSOM(BaseSOM):
+class StandardSOM(BaseSOM):
     """
     A standard rectangular SOM.
 
@@ -70,6 +74,8 @@ class RectangularSOM(BaseSOM):
     neighborhood_radius: float
         The radius of the neighborhood. Must be greater than zero.
         For the Gaussian neighborhood, this is the standard deviation of the Gauss function.
+    topology: {"rectangular"}, default = "rectangular"
+        The topology of the SOM. Currently, only the rectangular StandardSOM is supported, as opposed to hexagonal SOM.
     neighborhood_type: {"gauss"}, default = "gauss"
         The type of neighborhood to be used for training the SOM.
     distance_measure: {"euclidean"}, default = "euclidean"
@@ -78,7 +84,10 @@ class RectangularSOM(BaseSOM):
     Attributes
     ----------
     map_size: int, int
-        The height and width of the RectangularSOM.
+        The height and width of the StandardSOM.
+    topology: {"rectangular"}
+        The topology of the StandardSOM. Determines the number of neighbors for a unit. In a rectangular SOM, a unit
+        has four neighbors. In a hexagonal SOM, a unit has six neighbors.
     neighborhood_indices: ndarray of shape (map_size, 2)
         A ndarray that contains the indices of each position the SOM. Needed for vectorization of the update function.
     neighborhood_function: function(ndarray, int, float)
@@ -92,9 +101,11 @@ class RectangularSOM(BaseSOM):
     def __init__(self,
                  map_size,
                  neighborhood_radius,
+                 topology="rectangular",
                  neighborhood_type="gauss",
                  distance_measure="euclidean"):
-        super().__init__(neighborhood_radius,
+        super().__init__(topology,
+                         neighborhood_radius,
                          neighborhood_type,
                          distance_measure)
         # parameter check
@@ -103,12 +114,14 @@ class RectangularSOM(BaseSOM):
         if len(map_size) != 2:
             raise ValueError("map_size must be tuple of length 2")
         if map_size[0] <= 0 or map_size[1] <= 0:
-            raise ValueError("height and width of RectangularSOM must be greater zero")
+            raise ValueError("height and width of StandardSOM must be greater zero")
         if type(map_size[0]) != int or type(map_size[1]) != int:
             raise ValueError("height and width of map must be integers")
 
         # set map size
         self.map_size = map_size
+        # set topology
+        self.topology = topology
         # set array of neighborhood indices
         self.neighborhood_indices = _generate_neighborhood_indices_2d(map_size)
         # set neighborhood function
@@ -137,7 +150,7 @@ class RectangularSOM(BaseSOM):
 
         Returns
         -------
-        self: RectangularSOM
+        self: StandardSOM
             Fitted SOM
 
         Notes
