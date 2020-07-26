@@ -93,7 +93,7 @@ class StandardSOM(BaseSOM):
     neighborhood_type: {"gauss"}, default = "gauss"
         The type of neighborhood to be used for training the SOM.
     distance_measure: {"euclidean"}, default = "euclidean"
-        The distance measure to be used to calculate distances between units' weight vectors and the data
+        The distance measure to be used to calculate distances between units' weight vectors and the data.
 
     Attributes
     ----------

@@ -53,7 +53,7 @@ def generate_hex_positions(map_size):
 
 def _gauss_neighborhood(neighborhood_distances, sigma):
     """
-    Generate the normalized [0,1] pdf of a Gauss distribution for a given 1d neighborhood
+    Generate the normalized [0,1] pdf of a Gauss distribution for a given 1d neighborhood (distances).
 
     Parameters
     ----------
@@ -74,12 +74,12 @@ def _gauss_neighborhood(neighborhood_distances, sigma):
 
 def __norm_neighborhood(neighborhood):
     """
-    Normalize the values of the neighborhood between [0,1]
+    Normalize the values of the neighborhood between [0,1].
 
     Parameters
     ----------
     neighborhood: array of size n_units
-        The calculated neighborhood values for each unit in the SOM
+        The calculated neighborhood values for each unit in the SOM.
 
     Returns
     -------

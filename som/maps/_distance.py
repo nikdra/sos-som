@@ -14,7 +14,7 @@ def _euclid_distance(matrix, vector):
     Parameters
     ----------
     matrix: array-like of shape (n, m)
-        A matrix with n rows and m columns
+        A matrix with n rows and m columns.
     vector:
         A vector. Must have size m.
 
