@@ -10,7 +10,7 @@ from scipy.spatial import cKDTree
 from ._codebook import _init_codebook
 from ._distance import _euclid_distance, _hex_distance
 from ._neighborhood import _gauss_neighborhood, _positions_array_generic_2d, generate_hex_positions
-from ..util import group_by
+from ..util._util import group_by
 
 
 class BaseSOM:
@@ -80,6 +80,30 @@ class BaseSOM:
         """
         return self.positions
 
+    def get_bmu_distances(self):
+        """
+        Return the distance to the first and second BMU for all data points
+
+        Returns
+        -------
+        bmu_distances: array of shape (n_data, 2)
+            The distances to the first and second BMU
+        """
+        if self.trained:
+            return self.bmu_distances
+
+    def get_bmu_indices(self):
+        """
+        Return the position indices of the first and second BMU for all data points
+
+        Returns
+        -------
+        bmu_indices: array of shape (n_data, 2)
+            The position indices of the first and second BMU
+        """
+        if self.trained:
+            return self.bmu_indices
+
     @abstractmethod
     def get_first_bmus(self):
         raise NotImplementedError()
@@ -133,12 +157,30 @@ class StandardSOM(BaseSOM):
     """
 
     def get_first_bmus(self):
+        """
+        Get a dict of position indices and the distances to the data points where this unit is the BMU
+
+        Returns
+        -------
+        first_bmus: dict
+            Dictionary where integer key is the index of the unit in the positions array and the value is a list
+            of distances to the data points.
+        """
         if self.trained:
             return group_by(lambda pair: pair[0], list(zip(self.bmu_indices[:, 0], self.bmu_distances[:, 0])))
 
     def get_second_bmus(self):
+        """
+        Get a dict of position indices and the distances to the data points where this unit is the second BMU
+
+        Returns
+        -------
+        first_bmus: dict
+            Dictionary where integer key is the index of the unit in the positions array and the value is a list
+            of distances to the data points.
+        """
         if self.trained:
-            return group_by(lambda pair: pair[0], list(zip(self.bmu_indices[:,1], self.bmu_distances[:,1])))
+            return group_by(lambda pair: pair[0], list(zip(self.bmu_indices[:, 1], self.bmu_distances[:, 1])))
 
     def __init__(self,
                  map_size,
@@ -247,7 +289,7 @@ class StandardSOM(BaseSOM):
             self.codebook = self.codebook + alphas[i] * neighborhood[:, None] * (x - self.codebook)
 
         # find the first and second BMU for each data point
-        # TODO adapt when other distance quality are implemented
+        # TODO adapt when other distance measures for input space are implemented
         p = 2
         self.__find_bmu(data, p)
 

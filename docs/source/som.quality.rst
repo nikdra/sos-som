@@ -1,6 +1,14 @@
 som.quality package
 ===================
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   som.quality.quantization
+
 Module contents
 ---------------
 
