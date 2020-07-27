@@ -1,10 +1,11 @@
 """
 This module gathers SOM variants that can be trained in this module.
 """
-# Authors: Nikola Dragovic (@nikdra), 26.07.2020
+# Authors: Nikola Dragovic (@nikdra), 27.07.2020
 
 from abc import abstractmethod
 import numpy as np
+from scipy.spatial import cKDTree
 
 from ._codebook import _init_codebook
 from ._distance import _euclid_distance, _hex_distance
@@ -42,10 +43,12 @@ class BaseSOM:
         self.codebook = None
         self.positions = None
         self.trained = False
+        self.bmu_distances = None
+        self.bmu_indices = None
 
     @abstractmethod
     def train(self, data, iterations=10000, alpha=0.95, random_seed=1, codebook=None):
-        pass
+        raise NotImplementedError()
 
     def get_codebook(self):
         """
@@ -75,6 +78,14 @@ class BaseSOM:
             The position of each unit of the SOM. Can be of various shapes depending on the architecture of the SOM
         """
         return self.positions
+
+    @abstractmethod
+    def get_first_bmus(self):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def get_second_bmus(self):
+        raise NotImplementedError()
 
 
 class StandardSOM(BaseSOM):
@@ -112,7 +123,19 @@ class StandardSOM(BaseSOM):
         The function for calculating the distances between every weight vector in the codebook and a sample (vector).
     output_space_distance: function(ndarray, array-like)
         The function for calculating the distances between every unit in the SOM and a given unit.
+    trained: bool
+        True if the SOM has been trained, False otherwise.
+    bmu_distances: ndarray of shape (n_data, 2)
+        An array that contains the distances to the two BMU in the SOM for each data point
+    bmu_indices: ndarray of shape (n_data, 2)
+        An array that contains the indices of the positions of the two BMU in the SOM data point
     """
+
+    def get_first_bmus(self):
+        pass
+
+    def get_second_bmus(self):
+        pass
 
     def __init__(self,
                  map_size,
@@ -220,9 +243,41 @@ class StandardSOM(BaseSOM):
             # update
             self.codebook = self.codebook + alphas[i] * neighborhood[:, None] * (x - self.codebook)
 
+        # find the first and second BMU for each data point
+        # TODO adapt when other distance measures are implemented
+        p = 2
+        self.__find_bmu(data, p)
+
         # finished training
         self.trained = True
         return self
+
+    def __find_bmu(self, data, p):
+        """
+        Find the first and second BMU for each data point. The result is stored in the RectangularSOM.
+
+        The notion of the BMU itself is also dependent on the output space distance measure (euclidean, minkowski,
+        city-block etc.).
+
+        Nearest neighbor search for high dimensions is an open problem in computer science. Search in high-dimensional
+        domains is essentially brute-force, but can be assisted by building KD-Trees, which are faster for
+        lower-dimensional data. We use the scipy implementation of KD-Trees to find the BMUs.
+
+        Parameters
+        ----------
+        data: DataFrame of shape (n_samples, n_features)
+            Data to train the SOM. Should not contain the class labels for interpretable results.
+        p: float, 1 <= p <= infinity
+            Which Minkowski p-norm to use. 1 is the sum-of-absolute-values “Manhattan” distance 2 is the usual Euclidean
+            distance infinity is the maximum-coordinate-difference distance A finite large p may cause a ValueError if
+            overflow can occur.
+
+        Returns
+        -------
+        None
+        """
+        tree = cKDTree(self.codebook)
+        self.bmu_distances, self.bmu_indices = tree.query(data, k=2, p=p)
 
     def __neighborhood(self):
         """

@@ -1,10 +1,10 @@
-som.measures package
-====================
+som.util package
+================
 
 Module contents
 ---------------
 
-.. automodule:: som.measures
+.. automodule:: som.util
    :members:
    :undoc-members:
    :show-inheritance:

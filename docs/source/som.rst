@@ -8,7 +8,8 @@ Subpackages
    :maxdepth: 4
 
    som.maps
-   som.measures
+   som.quality
+   som.util
    som.visualization
 
 Module contents
