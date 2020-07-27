@@ -10,6 +10,7 @@ from scipy.spatial import cKDTree
 from ._codebook import _init_codebook
 from ._distance import _euclid_distance, _hex_distance
 from ._neighborhood import _gauss_neighborhood, _positions_array_generic_2d, generate_hex_positions
+from ..util import group_by
 
 
 class BaseSOM:
@@ -132,10 +133,12 @@ class StandardSOM(BaseSOM):
     """
 
     def get_first_bmus(self):
-        pass
+        if self.trained:
+            return group_by(lambda pair: pair[0], list(zip(self.bmu_indices[:, 0], self.bmu_distances[:, 0])))
 
     def get_second_bmus(self):
-        pass
+        if self.trained:
+            return group_by(lambda pair: pair[0], list(zip(self.bmu_indices[:,1], self.bmu_distances[:,1])))
 
     def __init__(self,
                  map_size,
@@ -244,7 +247,7 @@ class StandardSOM(BaseSOM):
             self.codebook = self.codebook + alphas[i] * neighborhood[:, None] * (x - self.codebook)
 
         # find the first and second BMU for each data point
-        # TODO adapt when other distance measures are implemented
+        # TODO adapt when other distance quality are implemented
         p = 2
         self.__find_bmu(data, p)
 
