@@ -22,7 +22,7 @@ def qe_m(som: BaseSOM):
         The quantization error for each unit.
     """
     # initialize result array
-    res = np.zeros(som.get_codebook().shape[0])
+    res = np.zeros(som.codebook.shape[0])
 
     # aggregate
     agg = {k: np.sum(v) for k, v in som.get_first_bmus().items()}
@@ -53,7 +53,7 @@ def mqe_m(som: BaseSOM):
         The mean quantization error for each unit.
     """
     # initialize result array
-    res = np.zeros(som.get_codebook().shape[0])
+    res = np.zeros(som.codebook.shape[0])
 
     # aggregate
     agg = {k: np.mean(v) for k, v in som.get_first_bmus().items()}
@@ -109,7 +109,7 @@ def mqe(som: BaseSOM):
     mqe: float
         The mean map quantization error for the SOM.
     """
-    return 1/(som.get_codebook().shape[0]) * qe(som)
+    return 1/(som.codebook.shape[0]) * qe(som)
 
 
 def mmqe(som: BaseSOM):

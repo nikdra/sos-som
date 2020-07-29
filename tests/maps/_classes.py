@@ -17,14 +17,22 @@ class TestRectangularSOM(unittest.TestCase):
         som = StandardSOM((50, 50), 5)
         som.train(data)
         self.assertTrue(som.trained)
-        self.assertIsNotNone(som.get_codebook())
+        self.assertIsNotNone(som.codebook)
+        self.assertIsNotNone(som.bmu_indices)
+        self.assertIsNotNone(som.bmu_distances)
+        self.assertIsNotNone(som.get_first_bmus())
+        self.assertIsNotNone(som.get_second_bmus())
 
     def test_train_hexagonal(self):
         data = pd.read_csv('../data/test_data.csv').drop(['Class'], axis=1)
         som = StandardSOM((50, 50), 5, "hexagonal")
         som.train(data)
         self.assertTrue(som.trained)
-        self.assertIsNotNone(som.get_codebook())
+        self.assertIsNotNone(som.codebook)
+        self.assertIsNotNone(som.bmu_indices)
+        self.assertIsNotNone(som.bmu_distances)
+        self.assertIsNotNone(som.get_first_bmus())
+        self.assertIsNotNone(som.get_second_bmus())
 
     def test_neighborhood_radius_less_than_zero_should_raise_value_error(self):
         with self.assertRaises(ValueError):
@@ -60,7 +68,7 @@ class TestRectangularSOM(unittest.TestCase):
         with self.assertRaises(ValueError):
             som.train(data, alpha=0)
         self.assertFalse(som.trained)
-        self.assertIsNone(som.get_codebook())
+        self.assertIsNone(som.codebook)
 
     def test_train_learning_rate_less_than_zero_should_raise_value_error(self):
         data = pd.read_csv('../data/test_data.csv').drop(['Class'], axis=1)
@@ -68,7 +76,7 @@ class TestRectangularSOM(unittest.TestCase):
         with self.assertRaises(ValueError):
             som.train(data, alpha=-0.01)
         self.assertFalse(som.trained)
-        self.assertIsNone(som.get_codebook())
+        self.assertIsNone(som.codebook)
 
     def test_train_data_none_should_raise_value_error(self):
         som = StandardSOM((50, 50), 5)

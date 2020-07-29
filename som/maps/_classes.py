@@ -51,59 +51,6 @@ class BaseSOM:
     def train(self, data, iterations=10000, alpha=0.95, random_seed=1, codebook=None):
         raise NotImplementedError()
 
-    def get_codebook(self):
-        """
-        Return the codebook of the SOM.
-
-        The codebook is only returned if the map has been trained
-
-        Returns
-        -------
-        codebook: ndarray of shape (n_units, n_features) or None in case the SOM is not trained
-            The codebook of the SOM i.e., the weight vectors of the units of the SOM.
-        """
-        if self.trained:
-            return self.codebook
-        return None
-
-    def get_positions(self):
-        """
-        Return the positions of the units of the SOM
-
-        The positions are only returned if the SOM has been initialized
-
-
-        Returns
-        -------
-        positions: array-like or None in case the SOM has not been initialized
-            The position of each unit of the SOM. Can be of various shapes depending on the architecture of the SOM
-        """
-        return self.positions
-
-    def get_bmu_distances(self):
-        """
-        Return the distance to the first and second BMU for all data points
-
-        Returns
-        -------
-        bmu_distances: array of shape (n_data, 2)
-            The distances to the first and second BMU
-        """
-        if self.trained:
-            return self.bmu_distances
-
-    def get_bmu_indices(self):
-        """
-        Return the position indices of the first and second BMU for all data points
-
-        Returns
-        -------
-        bmu_indices: array of shape (n_data, 2)
-            The position indices of the first and second BMU
-        """
-        if self.trained:
-            return self.bmu_indices
-
     @abstractmethod
     def get_first_bmus(self):
         raise NotImplementedError()
