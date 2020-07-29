@@ -7,7 +7,7 @@ import pandas as pd
 from som.maps import StandardSOM
 
 
-class TestRectangularSOM(unittest.TestCase):
+class TestStandardSOM(unittest.TestCase):
 
     def test_init(self):
         StandardSOM((1, 1), 1)
