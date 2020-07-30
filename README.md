@@ -2,7 +2,7 @@
 Train Self-Organizing Maps, compute quality measures and visualize them. The documentation of the package can be found
 [here](https://sos-som.readthedocs.io/en/latest/?).
 
-The "sos" is not a cry for help, but a shorthand for the course "Self-Organizing Systems" at TU Wien.
+The "sos" in sos-som is not a cry for help, but a shorthand for the course "Self-Organizing Systems" at TU Wien. 
 
 ## Installation
 
@@ -26,6 +26,8 @@ tbd
         - Quantization Error (Map)
         - Mean Quantization Error (Map)
         - Mean Mean Quantization Error (Map)
+    - Topology:
+        - Topographic Error (4 neighbors)
 
 ## Usage
 

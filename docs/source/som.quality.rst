@@ -8,6 +8,7 @@ Subpackages
    :maxdepth: 4
 
    som.quality.quantization
+   som.quality.topology
 
 Module contents
 ---------------
