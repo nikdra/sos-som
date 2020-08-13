@@ -22,6 +22,7 @@ class TestStandardSOM(unittest.TestCase):
         self.assertIsNotNone(som.bmu_distances)
         self.assertIsNotNone(som.get_first_bmus())
         self.assertIsNotNone(som.get_second_bmus())
+        som.hit_histogram()
 
     def test_train_hexagonal(self):
         data = pd.read_csv('../data/test_data.csv').drop(['Class'], axis=1)
@@ -33,6 +34,7 @@ class TestStandardSOM(unittest.TestCase):
         self.assertIsNotNone(som.bmu_distances)
         self.assertIsNotNone(som.get_first_bmus())
         self.assertIsNotNone(som.get_second_bmus())
+        som.hit_histogram()
 
     def test_neighborhood_radius_less_than_zero_should_raise_value_error(self):
         with self.assertRaises(ValueError):
@@ -98,4 +100,3 @@ class TestStandardSOM(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
