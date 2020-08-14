@@ -6,10 +6,6 @@ This module gathers SOM variants that can be trained in this module.
 from abc import abstractmethod
 import numpy as np
 from scipy.spatial import cKDTree
-from matplotlib import cm
-from matplotlib.colors import Normalize
-from matplotlib.patches import RegularPolygon
-import matplotlib.pyplot as plt
 
 from ._codebook import _init_codebook
 from ._distance import _euclid_distance, _hex_distance
@@ -63,10 +59,6 @@ class BaseSOM:
     def get_second_bmus(self):
         raise NotImplementedError()
 
-    @abstractmethod
-    def hit_histogram(self, cmap: str):
-        raise NotImplementedError()
-
 
 class StandardSOM(BaseSOM):
     """
@@ -110,66 +102,6 @@ class StandardSOM(BaseSOM):
     bmu_indices: ndarray of shape (n_data, 2)
         An array that contains the indices of the positions of the two BMU in the SOM data point
     """
-
-    def hit_histogram(self, cmap: str = "Reds"):
-        """
-        Show the hit histogram for the map
-
-        Parameters:
-        -----------
-        cmap: str, default = "Reds"
-            The string identifier for the matplotlib color map. See
-            [matplotlib](https://matplotlib.org/3.3.0/tutorials/colors/colormaps.html) for more information. The colors
-            are scaled linearly.
-        Returns:
-        --------
-        None
-        """
-        if self.codebook is not None and self.trained:
-            first_bmus = self.get_first_bmus()
-            # init hit result array
-            hits = np.zeros(len(self.positions))
-            # aggregate for each position with hits
-            agg = {k: len(v) for k, v in first_bmus.items()}
-            # fill up values at the resp. positions
-            hits[list(agg.keys())] = list(agg.values())
-            # define normalizer for matplotlib colors
-            normalized = Normalize(vmin=np.min(hits), vmax=np.max(hits))
-            # plot
-            fig, ax = plt.subplots(1)
-            ax.set_aspect("equal")
-            plt.axis('off')
-            cmap = cm.get_cmap(cmap)
-            if self.topology == "rectangular":
-                # axis limits
-                ax.set_xlim(-1, self.map_size[1])
-                ax.set_ylim(-1, self.map_size[0])
-                for pos, hit in zip(self.positions, hits):
-                    # noinspection PyTypeChecker
-                    rect = RegularPolygon((pos[1], pos[0]), numVertices=4, radius=np.sqrt(0.5),
-                                          orientation=np.radians(45), edgecolor='k', facecolor=cmap(normalized(hit)),
-                                          alpha=0.2)
-                    ax.add_patch(rect)
-
-            else:
-                # hexagonal topology
-                # Horizontal cartesian coords
-                hcoord = [c[0] for c in self.positions]
-                # Vertical cartersian coords
-                vcoord = [2. * np.sin(np.radians(60)) * (c[1] - c[2]) / 3. for c in self.positions]
-                # axis limits
-                ax.set_xlim(np.min(hcoord) - 2, np.max(hcoord) + 2)
-                ax.set_ylim(np.min(vcoord) - 2, np.max(vcoord) + 2)
-                for x, y, hit in zip(hcoord, vcoord, hits):
-                    # noinspection PyTypeChecker
-                    rect = RegularPolygon((x, y), numVertices=6, radius=2. / 3., orientation=np.radians(30),
-                                          edgecolor='k', facecolor=cmap(normalized(hit)), alpha=0.2)
-                    ax.add_patch(rect)
-
-            # add colorbar
-            plt.colorbar(cm.ScalarMappable(norm=normalized, cmap=cmap), ax=ax)
-            # show
-            plt.show()
 
     def get_first_bmus(self):
         """
