@@ -10,6 +10,6 @@ Let :math:`M` be the set of units in the SOM and :math:`I` be the set of inputs.
 
 the set of inputs where :math:`m` is the BMU.
 """
-from ._quantization import qe_map
+from ._quantization import qe_map, mqe_map
 
-__all__ = ["qe_map"]
+__all__ = ["qe_map", "mqe_map"]

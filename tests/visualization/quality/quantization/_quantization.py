@@ -5,7 +5,7 @@ import unittest
 import pandas as pd
 
 from som.maps import StandardSOM
-from som.visualization.quality.quantization import qe_map
+from som.visualization.quality.quantization import qe_map, mqe_map
 
 
 class TestStandardSOM(unittest.TestCase):
@@ -20,6 +20,7 @@ class TestStandardSOM(unittest.TestCase):
         self.assertIsNotNone(som.get_first_bmus())
         self.assertIsNotNone(som.get_second_bmus())
         qe_map(som)
+        mqe_map(som)
 
     def test_hexagonal(self):
         data = pd.read_csv('../../../data/test_data.csv').drop(['Class'], axis=1)
@@ -32,6 +33,7 @@ class TestStandardSOM(unittest.TestCase):
         self.assertIsNotNone(som.get_first_bmus())
         self.assertIsNotNone(som.get_second_bmus())
         qe_map(som)
+        mqe_map(som)
 
 
 if __name__ == '__main__':
