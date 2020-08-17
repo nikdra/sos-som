@@ -1,6 +1,5 @@
 """
-TODO: rewrite doc
-This module gathers tests for SOM variants that can be trained in this module.
+This module gathers tests for density visualizations of SOM variants that can be trained in this module.
 """
 import unittest
 import pandas as pd

@@ -9,7 +9,22 @@ from som.maps import StandardSOM, BaseSOM
 from som.quality.quantization import qe_m
 
 
-def _standard_som_qe_m(som: StandardSOM, cmap: str):
+def __standard_som_qe_m(som: StandardSOM, cmap: str):
+    """
+    Plot the quantization error for each unit for a standard SOM.
+    Plot depends on the topology of the neighborhood (hexagonal or rectangular).
+
+    Parameters:
+    -----------
+    som: StandardSOM
+        The SOM for which the quantization error should be plotted.
+    cmap: str
+        The matplotlib color map for the map.
+
+    Returns:
+    --------
+    None
+    """
     if som.codebook is not None and som.trained:
         # get qe for each unit
         qe_ms = qe_m(som)
@@ -52,10 +67,26 @@ def _standard_som_qe_m(som: StandardSOM, cmap: str):
         plt.show()
 
 
-def qe_map(som: BaseSOM, cmap: str):
+def qe_map(som: BaseSOM, cmap: str = "Reds"):
+    """
+    Show the quantization error for each unit in the map.
+
+    Parameters:
+    -----------
+    som: BaseSOM
+        The trained SOM where the hit histogram should be visualized.
+    cmap: str, default = "Reds"
+        The string identifier for the matplotlib color map. See
+        https://matplotlib.org/3.3.0/tutorials/colors/colormaps.html for more information. The colors
+        are scaled linearly.
+
+    Returns:
+    --------
+    None
+    """
     # define function for each SOM type
     types = {
-        StandardSOM: _standard_som_qe_m
+        StandardSOM: __standard_som_qe_m
     }
     # execute appropriate function
     types[type(som)](som, cmap)

@@ -1,4 +1,3 @@
-# TODO: documentation and testing
 import numpy as np
 from matplotlib import cm
 from matplotlib.colors import Normalize
@@ -8,7 +7,22 @@ import matplotlib.pyplot as plt
 from som.maps import StandardSOM
 
 
-def _standard_som_hit_histogram(som: StandardSOM, cmap: str):
+def __standard_som_hit_histogram(som: StandardSOM, cmap: str):
+    """
+    Plot the hit histogram for a standard SOM. Plot depends on the topology of the neighborhood (hexagonal or
+    rectangular).
+
+    Parameters:
+    -----------
+    som: StandardSOM
+        The SOM for which the hit histogram should be plotted.
+    cmap: str
+        The matplotlib color map for the map.
+
+    Returns:
+    --------
+    None
+    """
     if som.codebook is not None and som.trained:
         first_bmus = som.get_first_bmus()
         # init hit result array
@@ -66,7 +80,7 @@ def hit_histogram(som, cmap: str = "Reds"):
         The trained SOM where the hit histogram should be visualized.
     cmap: str, default = "Reds"
         The string identifier for the matplotlib color map. See
-        [matplotlib](https://matplotlib.org/3.3.0/tutorials/colors/colormaps.html) for more information. The colors
+        https://matplotlib.org/3.3.0/tutorials/colors/colormaps.html for more information. The colors
         are scaled linearly.
     Returns:
     --------
@@ -74,7 +88,7 @@ def hit_histogram(som, cmap: str = "Reds"):
     """
     # define function for each SOM type
     types = {
-        StandardSOM: _standard_som_hit_histogram
+        StandardSOM: __standard_som_hit_histogram
     }
     # execute appropriate function
     types[type(som)](som, cmap)

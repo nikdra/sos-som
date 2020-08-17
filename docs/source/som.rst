@@ -9,7 +9,6 @@ Subpackages
 
    som.maps
    som.quality
-   som.util
    som.visualization
 
 Module contents

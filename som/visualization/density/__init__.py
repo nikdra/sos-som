@@ -1,6 +1,7 @@
 """
-TODO: rewrite doc
-The :mod:`som.quality.quantization` module includes quantization quality measures for trained SOMs.
+The :mod:`som.visualization.density` module includes visualizations of the distribution of data items on the map.
+
+Each input vector is mapped onto its best-matching unit (BMU).
 
 Let :math:`M` be the set of units in the SOM and :math:`I` be the set of inputs. :math:`W_m` is then defined as
 
