@@ -8,6 +8,7 @@ Subpackages
    :maxdepth: 4
 
    som.visualization.quality.quantization
+   som.visualization.quality.topology
 
 Module contents
 ---------------
