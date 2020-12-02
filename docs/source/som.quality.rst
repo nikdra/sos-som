@@ -1,5 +1,5 @@
-sos\-som package
-================
+som.quality package
+===================
 
 Subpackages
 -----------
@@ -7,14 +7,13 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   sos-som.maps
-   sos-som.measures
-   sos-som.visualization
+   som.quality.quantization
+   som.quality.topology
 
 Module contents
 ---------------
 
-.. automodule:: sos-som
+.. automodule:: som.quality
    :members:
    :undoc-members:
    :show-inheritance:
